@@ -113,6 +113,11 @@ $(function()
             {
                 $("#chatUsers").append("<button class='col-md-12 alert-info sendCrypto'>" + key);
             })
+
+            $.each(usersOnline, function(key, val)
+            {
+                $("#chatUsers").on('click', sendCrypto(key));
+            })
         }
     });
 
@@ -123,8 +128,8 @@ $(function()
         var message = $(".message").val();
         if(message.length > 0)
         {
-            //emitimos el evento addNewMessage, el cuál simplemente mostrará
-            //el mensaje escrito en el chat con nuestro nombre, el cuál 
+            //emitimos el evento addNewMessage, el cual simplemente mostrará
+            //el mensaje escrito en el chat con nuestro nombre, el cual 
             //permanece en la sesión del socket relacionado a mi conexión
             socket.emit("addNewMessage", message);
             //limpiamos el mensaje
@@ -137,16 +142,8 @@ $(function()
         //llamamos a la función que mantiene el scroll al fondo
         animateScroll();
     });
-
-    //al pulsar el botón de enviar mensaje
-    $('.sendCrypto').on("click", function() 
-    {
-        //TO DO: Protocolo Needham-Schroeder
-        //llamamos a la función que mantiene el scroll al fondo
-        animateScroll();
-    });
-
 });
+
 
 //funcion que recibe como parametros el titulo y el mensaje de la ventana modal
 //reaprovechar codigo siempre que se pueda
@@ -202,4 +199,9 @@ function isEmptyObject(obj)
         return false;
     }
     return true;
+}
+
+function sendCrypto(obj)
+{
+    alert("Hi, " + obj);
 }
