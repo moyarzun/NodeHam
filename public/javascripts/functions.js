@@ -1,9 +1,10 @@
-var socket = io.connect('http://localhost:3000');
+var socket = io.connect();
 
 //al actualizar la página eliminamos la sesión del usuario de sessionStorage
 $(document).ready(function()
 {
     manageSessions.unset("login");
+    manageSessions.unset("pass");
 });
 
 //función para mantener el scroll siempre al final del div donde se muestran los mensajes
@@ -36,7 +37,7 @@ $(function()
     {
         e.preventDefault();
         //si el nombre de usuario es menor de 2 carácteres
-        if($(".username").val().length < 2)
+        if($(".username").val().length < 1)
         {
             //ocultamos el mensaje de error
             $(".errorMsg").hide();
@@ -45,11 +46,22 @@ $(function()
             //cortamos la ejecución
             return;
         }
+        //si la contraseña es menor de 8 carácteres
+        if($(".password").val().length < 8)
+        {
+            //ocultamos el mensaje de error
+            $(".errorMsg").hide();
+            //mostramos el mensaje de nuevo y ponemos el foco en el campo de texto
+            $(".password").after("<div class='col-md-12 alert alert-danger errorMsg'>La contraseña debe tener un largo de 8 caracteres.</div>").focus(); 
+            //cortamos la ejecución
+            return;
+        }
         //en otro caso, creamos la sesión login y lanzamos el evento loginUser
         //pasando el nombre del usuario que se ha conectado
         manageSessions.set("login", $(".username").val());
+        manageSessions.set("pass", $(".password").val());
         //llamamos al evento loginUser, el cuál creará un nuevo socket asociado a nuestro usuario
-        socket.emit("loginUser", manageSessions.get("login"));
+        socket.emit("loginUser", manageSessions.get("login"), manageSessions.get("pass"));
         //ocultamos la ventana modal
         $("#formModal").modal("hide");
         //llamamos a la función que mantiene el scroll al fondo
@@ -63,6 +75,7 @@ $(function()
         $("#formModal").modal("show");
         //eliminamos la sesión que se ha creado relacionada al usuario
         manageSessions.unset("login");
+        manageSessions.unset("pass");
         //ocultamos los mensajes de error de la modal
         $(".errorMsg").hide();
         //añadimos un nuevo mensaje de error y ponemos el foco en el campo de texto de la modal
@@ -70,9 +83,10 @@ $(function()
         return; 
     });
 
-    //cuando se emite el evente refreshChat
+    //cuando se emite el evento refreshChat
     socket.on("refreshChat", function(action, message)
     {
+
         //simplemente mostramos el nuevo mensaje a los usuarios
         //si es una nueva conexión
         if(action == "conectado")
@@ -94,6 +108,10 @@ $(function()
         {
             $("#chatMsgs").append("<p class='col-md-12 alert-success'>" + message + "</p>");
         }
+        else if(action == "crypt")
+        {
+            $("#chatMsgs").append("<p class='col-md-12 alert-success'>" + message + "</p>");
+        }
         //llamamos a la función que mantiene el scroll al fondo
         animateScroll();
     });
@@ -102,24 +120,24 @@ $(function()
     //alguno se conecta o desconecta, el parámetro son los usuarios online actualmente
     socket.on("updateSidebarUsers", function(usersOnline)
     {
-        //limpiamos el sidebar donde almacenamos usuarios
+
         $("#chatUsers").html("");
-        //si hay usuarios conectados, para evitar errores
+
         if(!isEmptyObject(usersOnline))
         {
-            //recorremos el objeto y los mostramos en el sidebar, los datos
-            //están almacenados con {clave : valor}
-            $.each(usersOnline, function(key, val)
-            {
-                $("#chatUsers").append("<button class='col-md-12 alert-info sendCrypto'>" + key);
-            })
 
             $.each(usersOnline, function(key, val)
             {
-                $("#chatUsers").on('click', sendCrypto(key));
+                $("#chatUsers").append("<p class='col-md-12 alert-info'>" + key + "</p>");
             })
         }
     });
+
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
 
     //al pulsar el botón de enviar mensaje
     $('.sendMsg').on("click", function() 
@@ -128,12 +146,19 @@ $(function()
         var message = $(".message").val();
         if(message.length > 0)
         {
-            //emitimos el evento addNewMessage, el cual simplemente mostrará
-            //el mensaje escrito en el chat con nuestro nombre, el cual 
-            //permanece en la sesión del socket relacionado a mi conexión
-            socket.emit("addNewMessage", message);
-            //limpiamos el mensaje
-            $(".message").val("");
+            if(message.indexOf('@') === 0)
+            {
+                socket.emit("addNewMessage", "(Encriptado) " + message.substring(1));
+                //socket.emit("refreshChat", "crypt", "ADVERTENCIA: Vas a enviar un mensaje encriptado!");
+                //socket.broadcast.emit("refreshChat", "crypt", socket.username + " dice: " + message);
+            }else{
+                //emitimos el evento addNewMessage, el cual simplemente mostrará
+                //el mensaje escrito en el chat con nuestro nombre, el cual 
+                //permanece en la sesión del socket relacionado a mi conexión
+                socket.emit("addNewMessage", message);
+                //limpiamos el mensaje
+                $(".message").val("");
+            }
         }
         else
         {
@@ -144,6 +169,11 @@ $(function()
     });
 });
 
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
 
 //funcion que recibe como parametros el titulo y el mensaje de la ventana modal
 //reaprovechar codigo siempre que se pueda
@@ -169,6 +199,9 @@ function renderForm()
     var html = "";
     html += '<div class="form-group" id="formLogin">';
     html += '<input type="text" id="username" class="form-control username" placeholder="Nombre de usuario:">';
+    html += '</div>';
+    html += '<div class="form-group" id="formLogin">';
+    html += '<input type="password" id="password" class="form-control password" placeholder="Contraseña:">';
     html += '</div>';
     html += '<button type="submit" class="btn btn-primary btn-large" id="loginBtn">Entrar</button>';
     return html;

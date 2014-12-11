@@ -27,7 +27,7 @@ io.sockets.on('connection', function(socket)
 {
 	//cuando el usuario conecta al chat comprobamos si está logueado
 	//el parámetro es la sesión login almacenada con sessionStorage
-	socket.on("loginUser", function(username)
+	socket.on("loginUser", function(username, password)
 	{
 		//si existe el nombre de usuario en el chat
 		if(usuariosOnline[username])
@@ -37,6 +37,7 @@ io.sockets.on('connection', function(socket)
 		}
 		//Guardamos el nombre de usuario en la sesión del socket para este cliente
 		socket.username = username;
+		socket.set("password", password);
 		//añadimos al usuario a la lista global donde almacenamos usuarios
 		usuariosOnline[username] = socket.username;
 		//mostramos al cliente como que se ha conectado
@@ -54,7 +55,6 @@ io.sockets.on('connection', function(socket)
 	{
 		//pasamos un parámetro, que es el mensaje que ha escrito en el chat, 
 		//ésto lo hacemos cuando el usuario pulsa el botón de enviar un nuevo mensaje al chat
-
 		//con socket.emit, el mensaje es para mi
 		socket.emit("refreshChat", "msg", "Yo : " + message);
 		//con socket.broadcast.emit, es para el resto de usuarios
