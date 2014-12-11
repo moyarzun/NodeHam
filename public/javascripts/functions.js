@@ -49,6 +49,16 @@ $(function()
             //cortamos la ejecución
             return;
         }
+        if($(".username").val().indexOf(' ') != -1){
+            //ocultamos el mensaje de error
+            $(".errorMsg").hide();
+            //mostramos el mensaje de nuevo y ponemos el foco en el campo de texto
+            $(".username").after("<div class='col-md-12 alert alert-danger errorMsg'>Tu nombre de usuario no debe contener espacios.</div>").focus(); 
+            //cortamos la ejecución            
+            return;
+        }
+        //si el nombre de usuario contiene espacios
+
         //si la contraseña es menor de 8 carácteres
         if($(".password").val().length < 8)
         {

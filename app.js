@@ -74,6 +74,7 @@ io.sockets.on('connection', function(socket)
 	        {
 	            socket.emit("refreshChat", "yo", datos.emisor + " - ERROR: Usuario '" + datos.receptor + "' no está conectado.");
 	        }else{
+	        	
 		        socket.emit("handshake", "2", datos.emisor + " - (Encriptado a '" + datos.receptor + "')");
 	        }
     	}
