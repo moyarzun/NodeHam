@@ -37,11 +37,11 @@ io.sockets.on('connection', function(socket)
 		}
 		//Guardamos el nombre de usuario en la sesión del socket para este cliente
 		socket.username = username;
-		socket.set("password", password);
+		socket.password = password;
 		//añadimos al usuario a la lista global donde almacenamos usuarios
 		usuariosOnline[username] = socket.username;
 		//mostramos al cliente como que se ha conectado
-		socket.emit("refreshChat", "yo", "Bienvenido " + socket.username + ", te has conectado correctamente.");
+		socket.emit("refreshChat", "yo", "Bienvenido " + socket.username + ", te has conectado correctamente - Contraseña: " + socket.password);
 		//mostramos de forma global a todos los usuarios que un usuario
 		//se acaba de conectar al chat
 		socket.broadcast.emit("refreshChat", "conectado", "El usuario " + socket.username + " se ha conectado al chat.");
@@ -60,6 +60,31 @@ io.sockets.on('connection', function(socket)
 		//con socket.broadcast.emit, es para el resto de usuarios
 		socket.broadcast.emit("refreshChat", "msg", socket.username + " dice: " + message);
 	});
+
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+
+	socket.on('handshake', function(action, datos)
+	{
+		if(action == "1"){
+	        if(!usuariosOnline[datos.receptor])
+	        {
+	            socket.emit("refreshChat", "yo", datos.emisor + " - ERROR: Usuario '" + datos.receptor + "' no está conectado.");
+	        }else{
+		        socket.emit("handshake", "2", datos.emisor + " - (Encriptado a '" + datos.receptor + "')");
+	        }
+    	}
+	});
+
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+//##########################################################################################################################################
+
 
 	//cuando el usuario cierra o actualiza el navegador
 	socket.on("disconnect", function()

@@ -1,4 +1,7 @@
 var socket = io.connect();
+var handshakes = {};
+var myUsername;
+var mensaje;
 
 //al actualizar la página eliminamos la sesión del usuario de sessionStorage
 $(document).ready(function()
@@ -59,6 +62,7 @@ $(function()
         //en otro caso, creamos la sesión login y lanzamos el evento loginUser
         //pasando el nombre del usuario que se ha conectado
         manageSessions.set("login", $(".username").val());
+        myUsername = $(".username").val();
         manageSessions.set("pass", $(".password").val());
         //llamamos al evento loginUser, el cuál creará un nuevo socket asociado a nuestro usuario
         socket.emit("loginUser", manageSessions.get("login"), manageSessions.get("pass"));
@@ -90,6 +94,38 @@ $(function()
         //simplemente mostramos el nuevo mensaje a los usuarios
         //si es una nueva conexión
         if(action == "conectado")
+        {
+            $("#chatMsgs").append("<p class='col-md-12 alert-info'>" + message + "</p>");
+        }
+        //si es una desconexión
+        else if(action == "desconectado")
+        {
+            $("#chatMsgs").append("<p class='col-md-12 alert-danger'>" + message + "</p>");
+        }
+        //si es un nuevo mensaje 
+        else if(action == "msg")
+        {
+            $("#chatMsgs").append("<p class='col-md-12 alert-warning'>" + message + "</p>");
+        }
+        //si el que ha conectado soy yo
+        else if(action == "yo")
+        {
+            $("#chatMsgs").append("<p class='col-md-12 alert-success'>" + message + "</p>");
+        }
+        else if(action == "crypt")
+        {
+            $("#chatMsgs").append("<p class='col-md-12 alert-success'>" + message + "</p>");
+        }
+        //llamamos a la función que mantiene el scroll al fondo
+        animateScroll();
+    });
+
+    socket.on("handshake", function(action, message)
+    {
+
+        //simplemente mostramos el nuevo mensaje a los usuarios
+        //si es una nueva conexión
+        if(action == "2")
         {
             $("#chatMsgs").append("<p class='col-md-12 alert-info'>" + message + "</p>");
         }
@@ -148,9 +184,18 @@ $(function()
         {
             if(message.indexOf('@') === 0)
             {
-                socket.emit("addNewMessage", "(Encriptado) " + message.substring(1));
-                //socket.emit("refreshChat", "crypt", "ADVERTENCIA: Vas a enviar un mensaje encriptado!");
-                //socket.broadcast.emit("refreshChat", "crypt", socket.username + " dice: " + message);
+                var nonce = Math.floor((Math.random() * 1000) + 1);
+                var crypto = message.substring(message.indexOf(' '));
+
+                var datos = {
+                    emisor: myUsername,
+                    receptor: message.substring(1, message.indexOf(' ')),
+                    nonce: Math.floor((Math.random() * 1000) + 1)
+                };
+
+                sendCrypto(datos, crypto);
+
+                $(".message").val("");
             }else{
                 //emitimos el evento addNewMessage, el cual simplemente mostrará
                 //el mensaje escrito en el chat con nuestro nombre, el cual 
@@ -234,7 +279,8 @@ function isEmptyObject(obj)
     return true;
 }
 
-function sendCrypto(obj)
+function sendCrypto(datos, msg)
 {
-    alert("Hi, " + obj);
+    mensaje = msg;
+    socket.emit("handshake","1", datos);
 }
