@@ -90,6 +90,7 @@ io.sockets.on('connection', function(socket)
     	}else if(action == "6"){
     		socket.broadcast.emit("handshake", "6", datos);
     	}else if(action == "7"){
+    		socket.emit("refreshChat", "cryptYo", datos);
     		socket.broadcast.emit("refreshChat", "crypt", datos); 
     	}
 	});

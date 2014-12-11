@@ -3,7 +3,7 @@ var myUsername;
 var myPassword;
 var myReceptor;
 var myNonce;
-var mensaje;
+var myMensaje;
 
 var claveSesion = {};
 
@@ -129,15 +129,9 @@ $(function()
         }
         else if(action == "crypt")
         {   
-            console.log("recibiendo mensaje encriptado");
-            console.log("Mensaje: " + message);
             var interlocutor = message.substring(0, message.indexOf("||"));
-            console.log("Interlocutor: " + interlocutor);
             var payload = message.substring(message.indexOf("||")+2);  
-            console.log("Payload: " + payload);
-            console.log("Clave de sesión: " + claveSesion[interlocutor]);
             if(claveSesion[interlocutor]){
-                //var nonce = encDes(payload, claveSesion[emisor], 1);
                 var planoM = encDes(payload, claveSesion[interlocutor], 1);
                 $("#chatMsgs").append("<p class='col-md-12 alert-success'>(Mensaje de " + interlocutor + ": " + planoM + ")</p>");
             }
@@ -148,7 +142,6 @@ $(function()
 
     socket.on("handshake", function(action, message)
     {
-
         //Paso 3 del handshake - EMISOR
         if(action == "2")
         {
@@ -196,8 +189,12 @@ $(function()
         //Paso 7 - EMISOR, FIN DE HANDSHAKE Y MENSAJE INICIAL
         }else if(action == "6"){
             var receptor = message;
-            var payload = encDes(mensaje, claveSesion[receptor], 0);
+            console.log("Receptor: "+receptor);
+            console.log("Clave de sesión: "+claveSesion[receptor]);
+            console.log("Mensaje: "+myMensaje);
+            var payload = encDes(myMensaje, claveSesion[receptor], 0);
             var data = myUsername + "||" + payload;
+            $("#chatMsgs").append("<p class='col-md-12 alert-success'>(@" + receptor + ": " + myMensaje + ")</p>");
             socket.emit("handshake", "7", data);
         //Paso 8 - Comunicación encriptada
         }else if(action = "7"){
@@ -244,10 +241,9 @@ $(function()
                 var rec = message.substring(1, message.indexOf(' '));
                 var crypto = message.substring(message.indexOf(' ') +1);
                 if(claveSesion[rec]){
-                    var enc = encDes(crypto, claveSesion[rec], 1)
+                    var enc = encDes(crypto, claveSesion[rec], 0)
                     var data = myUsername + "||" + enc;
-                    console.log("Payload: " + enc);
-                    console.log(claveSesion[rec]);
+                    $("#chatMsgs").append("<p class='col-md-12 alert-success'>(@" + rec + ": " + crypto + ")</p>");
                     socket.emit("handshake", "7", data);
                 }else{
                     var nonce = Math.floor((Math.random() * 1000) + 1);
@@ -347,6 +343,6 @@ function isEmptyObject(obj)
 
 function sendCrypto(datos, msg)
 {
-    mensaje = msg;
+    myMensaje = msg;
     socket.emit("handshake","1", datos);
 }
