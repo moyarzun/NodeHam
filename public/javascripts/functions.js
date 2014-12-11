@@ -256,7 +256,7 @@ function renderForm()
     html += '<input type="text" id="username" class="form-control username" placeholder="Nombre de usuario:">';
     html += '</div>';
     html += '<div class="form-group" id="formLogin">';
-    html += '<input type="password" id="password" class="form-control password" placeholder="Contraseña:">';
+    html += '<input type="password" id="password" class="form-control password" placeholder="Contraseña (8 caracteres o más):">';
     html += '</div>';
     html += '<button type="submit" class="btn btn-primary btn-large" id="loginBtn">Entrar</button>';
     return html;
