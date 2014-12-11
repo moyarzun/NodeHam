@@ -87,6 +87,10 @@ io.sockets.on('connection', function(socket)
     		socket.broadcast.emit("handshake", "4", datos);
     	}else if(action == "5"){
     		socket.broadcast.emit("handshake", "5", datos);
+    	}else if(action == "6"){
+    		socket.broadcast.emit("handshake", "6", datos);
+    	}else if(action == "7"){
+    		socket.broadcast.emit("refreshChat", "crypt", datos); 
     	}
 	});
 
