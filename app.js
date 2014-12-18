@@ -63,6 +63,8 @@ io.sockets.on('connection', function(socket)
 		socket.broadcast.emit("refreshChat", "msg", socket.username + " dice: " + message);
 	});
 
+
+
 //##########################################################################################################################################
 //##########################################################################################################################################
 //##########################################################################################################################################
@@ -71,7 +73,11 @@ io.sockets.on('connection', function(socket)
 
 	socket.on('handshake', function(action, datos)
 	{
-		//Paso 2 de handshake - SERVIDOR
+		//Paso 2 de handshake - SERVIDOR.
+
+		//En Paso 1, el servidor Node.js actúa como SERVIDOR DE AUTENTICACIÓN.
+		//Recibe el mensaje enviado por Alice con su intención de comunicación, y encripta la información necesaria
+		//para que Alice y Bob puedan comunicarse de forma encripada, incluyendo clave de sesión.
 		if(action == "1"){
 	        if(!usuariosOnline[datos.receptor])
 	        {
@@ -83,6 +89,9 @@ io.sockets.on('connection', function(socket)
 	        	socket.emit("refreshChat", "yo", datos.emisor + " - Servidor de Autenticación envía criptograma: "+cryptoM);
 		        socket.emit("handshake", "2", cryptoM);
 	        }
+
+	    //En el resto de los casos, el servidor solamente enruta los mensajes entre los usuarios.
+	    //El servidor no puede ver el contenido de los mensajes.
     	}else if(action == "3"){
     		socket.broadcast.emit("handshake", "3", datos);
     	}else if(action == "4"){

@@ -142,7 +142,7 @@ $(function()
 
     socket.on("handshake", function(action, message)
     {
-        //Paso 3 del handshake - EMISOR
+        //Paso 2 de Needham-Shroeder - ALICE recibe el criptograma del SERVIDOR DE AUTENTICACIÓN
         if(action == "2")
         {
             var planoM = encDes(message, myPassword, 1);
@@ -154,7 +154,7 @@ $(function()
             $("#chatMsgs").append("<p class='col-md-12 alert-warning'>Paso 3: enviando criptograma a "+myReceptor+": "+payload+"</p>");
             socket.emit("handshake", "3", payload);
         }
-        //Paso 4 del handshake - RECEPTOR
+        //Paso 3 de Needham-Schroeder - BOB recibe mensaje encriptado de ALICE de parte del SERVIDOR DE AUTENTICACIÓN
         else if(action == "3")
         {
             var planoM = encDes(message, myPassword, 1);
@@ -171,7 +171,7 @@ $(function()
             $("#chatMsgs").append("<p class='col-md-12 alert-warning'>Paso 4: confirmando recepción de clave para "+emisor+". Criptograma enviado: "+mensaje+"</p>");
             socket.emit("handshake", "4", mensaje);
         }
-        //Paso 5 del handshake - EMISOR
+        //Paso 4 de Needham-Shroeder - ALICE recibe nonce de BOB para confirmar recepción de CLAVE DE SESIÓN
         else if(action == "4")
         {
             var receptor = message.substring(0, message.indexOf("||"));
@@ -185,7 +185,7 @@ $(function()
             socket.emit("handshake", "5", mensaje);
             $("#chatMsgs").append("<p class='col-md-12 alert-warning'>Handshake finalizado con éxito!!</p>");
             $("#chatMsgs").append("<p class='col-md-12 alert-warning'>Paso 5: Respondiendo nonce a "+receptor+". Nonce enviado: "+nonce+"</p>");
-        //Paso 6 del handshake - RECEPTOR
+        //Paso 5 de Needham Shroeder - BOB recibe respuesta de su nonce por parte de ALICE para confirmar recepción de CLAVE DE SESIÓN
         }else if(action == "5"){
             var emisor = message.substring(0, message.indexOf("||"));
             var payload = message.substring(message.indexOf("||")+2);
@@ -197,7 +197,7 @@ $(function()
                 var mensaje = myUsername;
                 socket.emit("handshake", "6", mensaje);
             }
-        //Paso 7 - EMISOR, FIN DE HANDSHAKE Y MENSAJE INICIAL
+        //Paso 6 - ALICE envía a BOB el mensaje encriptado pendiente
         }else if(action == "6"){
             var receptor = message;
             console.log("Receptor: "+receptor);
@@ -207,7 +207,7 @@ $(function()
             var data = myUsername + "||" + payload;
             $("#chatMsgs").append("<p class='col-md-12 alert-success'>(@" + receptor + ": " + myMensaje + "). Clave de sesión usada: "+claveSesion[receptor]+"</p>");
             socket.emit("handshake", "7", data);
-        //Paso 8 - Comunicación encriptada
+        //Paso 7 - Comunicación encriptada entre ALICE y BOB con CLAVE DE SESIÓN entregada por SERVIDOR DE AUTENTICACIÓN a través del protocolo de Needham-Schroeder
         }else if(action = "7"){
             socket.emit("addNewMessage", "crypt", message);        
         }
@@ -247,6 +247,7 @@ $(function()
         if(message.length > 0)
         {
             //Paso 1 del handshake - EMISOR
+            //Es en este paso donde se inicia el protocolo Needham-Schroeder
             if(message.indexOf('@') === 0)
             {
                 var rec = message.substring(1, message.indexOf(' '));
