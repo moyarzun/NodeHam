@@ -77,8 +77,10 @@ io.sockets.on('connection', function(socket)
 	        {
 	            socket.emit("refreshChat", "yo", datos.emisor + " - ERROR: Usuario '" + datos.receptor + "' no está conectado.");
 	        }else{
+	        	socket.emit("refreshChat", "yo", datos.emisor + " - Servidor de Autenticación ha recibido su petición. Generando clave de sesión.");
 	        	var claveSesion = Math.floor(Math.random() * 100000);
 	        	var cryptoM = encDes(datos.nonce + "!!" + claveSesion + "**" + datos.receptor + "@@" + encDes(claveSesion + "||" + datos.emisor, passwordsOnline[datos.receptor], 0), passwordsOnline[socket.username], 0);
+	        	socket.emit("refreshChat", "yo", datos.emisor + " - Servidor de Autenticación envía criptograma: "+cryptoM);
 		        socket.emit("handshake", "2", cryptoM);
 	        }
     	}else if(action == "3"){
